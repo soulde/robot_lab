@@ -119,3 +119,97 @@ DEEPROBOTICS_M20_CFG = ArticulationCfg(
         ),
     },
 )
+
+DEEPROBOTICS_DR02_STANDARD_CFG = ArticulationCfg(
+    spawn=sim_utils.UrdfFileCfg(
+        fix_base=False,
+        merge_fixed_joints=True,
+        replace_cylinders_with_capsules=False,
+        asset_path=f"{ISAACLAB_ASSETS_DATA_DIR}/Robots/deeprobotics/dr02_standard_description/urdf/dr02_std.urdf",
+        activate_contact_sensors=True,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
+        ),
+        joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
+            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
+        ),
+    ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        pos=(0.0, 0.0, 0.95),
+        joint_pos={
+            ".*hip.*": 0.0,
+            ".*knee_joint": 0.0,
+            ".*ankle.*": 0.0,
+            ".*shoulder.*": 0.0,
+            ".*elbow_joint": 0.0,
+            "waist_z_joint": 0.0,
+        },
+        joint_vel={".*": 0.0},
+    ),
+    soft_joint_pos_limit_factor=0.9,
+    actuators={
+        "legs": DCMotorCfg(
+            joint_names_expr=[".*_hip_[xy]_joint", ".*_knee_joint"],
+            effort_limit=363.0,
+            saturation_effort=363.0,
+            velocity_limit=20.0,
+            stiffness=100.0,
+            damping=4.0,
+            friction=0.0,
+        ),
+        "ankles": DCMotorCfg(
+            joint_names_expr=[".*_ankle_[xy]_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=40.0,
+            damping=2.0,
+            friction=0.0,
+        ),
+        "body": DCMotorCfg(
+            joint_names_expr=["waist_z_joint", ".*_hip_z_joint", ".*_shoulder_._joint", ".*_elbow_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=40.0,
+            damping=2.0,
+            friction=0.0,
+        ),
+    },
+)
+
+DEEPROBOTICS_DR02_PRO_CFG = DEEPROBOTICS_DR02_STANDARD_CFG.replace(
+    spawn=DEEPROBOTICS_DR02_STANDARD_CFG.spawn.replace(
+        asset_path=f"{ISAACLAB_ASSETS_DATA_DIR}/Robots/deeprobotics/dr02_pro_description/urdf/dr02_pro.urdf"
+    ),
+    actuators={
+        **DEEPROBOTICS_DR02_STANDARD_CFG.actuators,
+        "waist": DCMotorCfg(
+            joint_names_expr=["waist_[xy]_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=40.0,
+            damping=2.0,
+            friction=0.0,
+        ),
+        "wrists_neck": DCMotorCfg(
+            joint_names_expr=[".*_wrist_._joint", "neck_._joint"],
+            effort_limit=50.0,
+            saturation_effort=50.0,
+            velocity_limit=23.76,
+            stiffness=20.0,
+            damping=1.0,
+            friction=0.0,
+        ),
+    },
+)
