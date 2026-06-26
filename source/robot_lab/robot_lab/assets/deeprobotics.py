@@ -1,10 +1,12 @@
 # Copyright (c) 2024-2026 Ziqi Fan
 # SPDX-License-Identifier: Apache-2.0
 
+import os
+import tempfile
+
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import DCMotorCfg
 from isaaclab.assets.articulation import ArticulationCfg
-
 from robot_lab.assets import ISAACLAB_ASSETS_DATA_DIR
 
 DEEPROBOTICS_LITE3_CFG = ArticulationCfg(
@@ -135,7 +137,10 @@ DEEPROBOTICS_DR02_STANDARD_CFG = ArticulationCfg(
             max_linear_velocity=1000.0,
             max_angular_velocity=1000.0,
             max_depenetration_velocity=1.0,
+
         ),
+        usd_dir=os.path.join(tempfile.gettempdir(), "IsaacLab", "dr02_std"),
+        usd_file_name="dr02_std.usd",
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
         ),
@@ -189,7 +194,9 @@ DEEPROBOTICS_DR02_STANDARD_CFG = ArticulationCfg(
 
 DEEPROBOTICS_DR02_PRO_CFG = DEEPROBOTICS_DR02_STANDARD_CFG.replace(
     spawn=DEEPROBOTICS_DR02_STANDARD_CFG.spawn.replace(
-        asset_path=f"{ISAACLAB_ASSETS_DATA_DIR}/Robots/deeprobotics/dr02_pro_description/urdf/dr02_pro.urdf"
+        asset_path=f"{ISAACLAB_ASSETS_DATA_DIR}/Robots/deeprobotics/dr02_pro_description/urdf/dr02_pro.urdf",
+                    usd_dir=os.path.join(tempfile.gettempdir(), "IsaacLab", "dr02_pro"),
+            usd_file_name="dr02_pro.usd",
     ),
     actuators={
         **DEEPROBOTICS_DR02_STANDARD_CFG.actuators,
