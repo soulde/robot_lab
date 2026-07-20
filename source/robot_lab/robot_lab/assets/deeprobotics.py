@@ -2,12 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import tempfile
 
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import DCMotorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from robot_lab.assets import ISAACLAB_ASSETS_DATA_DIR
+
+
+def _require_user_tmp_dir() -> str:
+    tmp_dir = os.environ.get("TMPDIR")
+    if not tmp_dir:
+        raise RuntimeError("TMPDIR must be set to a user-specific directory before importing DR02 assets")
+    return os.path.realpath(os.path.abspath(os.path.expanduser(tmp_dir)))
+
+
+_USER_TMP_DIR = _require_user_tmp_dir()
 
 DEEPROBOTICS_LITE3_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
@@ -139,7 +148,7 @@ DEEPROBOTICS_DR02_STANDARD_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
 
         ),
-        usd_dir=os.path.join(tempfile.gettempdir(), "IsaacLab", "dr02_std"),
+        usd_dir=os.path.join(_USER_TMP_DIR, "IsaacLab", "dr02_standard"),
         usd_file_name="dr02_std.usd",
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
@@ -162,59 +171,141 @@ DEEPROBOTICS_DR02_STANDARD_CFG = ArticulationCfg(
     ),
     soft_joint_pos_limit_factor=0.9,
     actuators={
-        "legs": DCMotorCfg(
+        "leg_pitch_roll_knee": DCMotorCfg(
             joint_names_expr=[".*_hip_[xy]_joint", ".*_knee_joint"],
             effort_limit=363.0,
             saturation_effort=363.0,
             velocity_limit=20.0,
+            stiffness=200.0,
+            damping=8.0,
+            friction=0.0,
+        ),
+        "hip_yaw": DCMotorCfg(
+            joint_names_expr=[".*_hip_z_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=150.0,
+            damping=8.0,
+            friction=0.0,
+        ),
+        "ankle_pitch": DCMotorCfg(
+            joint_names_expr=[".*_ankle_y_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=120.0,
+            damping=8.0,
+            friction=0.0,
+        ),
+        "ankle_roll": DCMotorCfg(
+            joint_names_expr=[".*_ankle_x_joint"],
+            effort_limit=50.0,
+            saturation_effort=50.0,
+            velocity_limit=23.76,
+            stiffness=80.0,
+            damping=8.0,
+            friction=0.0,
+        ),
+        "waist_arms": DCMotorCfg(
+            joint_names_expr=["waist_z_joint", ".*_shoulder_[xyz]_joint", ".*_elbow_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
             stiffness=100.0,
-            damping=4.0,
-            friction=0.0,
-        ),
-        "ankles": DCMotorCfg(
-            joint_names_expr=[".*_ankle_[xy]_joint"],
-            effort_limit=137.0,
-            saturation_effort=137.0,
-            velocity_limit=19.38,
-            stiffness=40.0,
-            damping=2.0,
-            friction=0.0,
-        ),
-        "body": DCMotorCfg(
-            joint_names_expr=["waist_z_joint", ".*_hip_z_joint", ".*_shoulder_._joint", ".*_elbow_joint"],
-            effort_limit=137.0,
-            saturation_effort=137.0,
-            velocity_limit=19.38,
-            stiffness=40.0,
-            damping=2.0,
+            damping=8.0,
             friction=0.0,
         ),
     },
 )
 
-DEEPROBOTICS_DR02_PRO_CFG = DEEPROBOTICS_DR02_STANDARD_CFG.replace(
+DEEPROBOTICS_DR02_PRO_CFG = ArticulationCfg(
     spawn=DEEPROBOTICS_DR02_STANDARD_CFG.spawn.replace(
         asset_path=f"{ISAACLAB_ASSETS_DATA_DIR}/Robots/deeprobotics/dr02_pro_description/urdf/dr02_pro.urdf",
-                    usd_dir=os.path.join(tempfile.gettempdir(), "IsaacLab", "dr02_pro"),
-            usd_file_name="dr02_pro.usd",
+        usd_dir=os.path.join(_USER_TMP_DIR, "IsaacLab", "dr02_pro"),
+        usd_file_name="dr02_pro.usd",
     ),
+    init_state=DEEPROBOTICS_DR02_STANDARD_CFG.init_state,
+    soft_joint_pos_limit_factor=0.9,
     actuators={
-        **DEEPROBOTICS_DR02_STANDARD_CFG.actuators,
-        "waist": DCMotorCfg(
-            joint_names_expr=["waist_[xy]_joint"],
+        "waist_yaw": DCMotorCfg(
+            joint_names_expr=["waist_z_joint"],
             effort_limit=137.0,
             saturation_effort=137.0,
             velocity_limit=19.38,
-            stiffness=40.0,
-            damping=2.0,
+            stiffness=200.0,
+            damping=10.0,
             friction=0.0,
         ),
-        "wrists_neck": DCMotorCfg(
-            joint_names_expr=[".*_wrist_._joint", "neck_._joint"],
+        "waist_roll": DCMotorCfg(
+            joint_names_expr=["waist_x_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=2800.0,
+            damping=15.0,
+            friction=0.0,
+        ),
+        "waist_pitch": DCMotorCfg(
+            joint_names_expr=["waist_y_joint"],
+            effort_limit=363.0,
+            saturation_effort=363.0,
+            velocity_limit=20.0,
+            stiffness=2300.0,
+            damping=20.0,
+            friction=0.0,
+        ),
+        "arms": DCMotorCfg(
+            joint_names_expr=[".*_shoulder_[xyz]_joint", ".*_elbow_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=100.0,
+            damping=5.0,
+            friction=0.0,
+        ),
+        "wrists": DCMotorCfg(
+            joint_names_expr=[".*_wrist_[xyz]_joint"],
             effort_limit=50.0,
             saturation_effort=50.0,
             velocity_limit=23.76,
-            stiffness=20.0,
+            stiffness=90.0,
+            damping=2.0,
+            friction=0.0,
+        ),
+        "leg_pitch_roll_knee": DCMotorCfg(
+            joint_names_expr=[".*_hip_[xy]_joint", ".*_knee_joint"],
+            effort_limit=363.0,
+            saturation_effort=363.0,
+            velocity_limit=20.0,
+            stiffness=300.0,
+            damping=10.0,
+            friction=0.0,
+        ),
+        "hip_yaw": DCMotorCfg(
+            joint_names_expr=[".*_hip_z_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=300.0,
+            damping=10.0,
+            friction=0.0,
+        ),
+        "ankle_pitch": DCMotorCfg(
+            joint_names_expr=[".*_ankle_y_joint"],
+            effort_limit=137.0,
+            saturation_effort=137.0,
+            velocity_limit=19.38,
+            stiffness=80.0,
+            damping=3.0,
+            friction=0.0,
+        ),
+        "ankle_roll": DCMotorCfg(
+            joint_names_expr=[".*_ankle_x_joint"],
+            effort_limit=50.0,
+            saturation_effort=50.0,
+            velocity_limit=23.76,
+            stiffness=30.0,
             damping=1.0,
             friction=0.0,
         ),
