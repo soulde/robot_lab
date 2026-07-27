@@ -225,7 +225,16 @@ DEEPROBOTICS_DR02_PRO_CFG = ArticulationCfg(
         usd_dir=os.path.join(_USER_TMP_DIR, "IsaacLab", "dr02_pro"),
         usd_file_name="dr02_pro.usd",
     ),
-    init_state=DEEPROBOTICS_DR02_STANDARD_CFG.init_state,
+    init_state=ArticulationCfg.InitialStateCfg(
+        pos=(0.0, 0.0, 0.95),
+        joint_pos={
+            "^(?!.*(?:_elbow_joint|_shoulder_z_joint)$).*$": 0.0,
+            "left_shoulder_z_joint": 0.765,
+            "right_shoulder_z_joint": -0.765,
+            ".*_elbow_joint": 1.25,
+        },
+        joint_vel={".*": 0.0},
+    ),
     soft_joint_pos_limit_factor=0.9,
     actuators={
         "waist_yaw": DCMotorCfg(
@@ -260,8 +269,22 @@ DEEPROBOTICS_DR02_PRO_CFG = ArticulationCfg(
             effort_limit=137.0,
             saturation_effort=137.0,
             velocity_limit=19.38,
-            stiffness=100.0,
-            damping=5.0,
+            stiffness={
+                ".*_shoulder_y_joint": 417.0,
+                ".*_shoulder_x_joint": 331.0,
+                ".*_shoulder_z_joint": 329.0,
+                ".*_elbow_joint": 90.0,
+            },
+            damping={
+                ".*_shoulder_[xyz]_joint": 10.0,
+                ".*_elbow_joint": 4.0,
+            },
+            armature={
+                ".*_shoulder_y_joint": 0.6664750278,
+                ".*_shoulder_x_joint": 0.5299741328,
+                ".*_shoulder_z_joint": 0.5262607038,
+                ".*_elbow_joint": 0.1438293383,
+            },
             friction=0.0,
         ),
         "wrists": DCMotorCfg(
@@ -269,17 +292,38 @@ DEEPROBOTICS_DR02_PRO_CFG = ArticulationCfg(
             effort_limit=50.0,
             saturation_effort=50.0,
             velocity_limit=23.76,
-            stiffness=90.0,
-            damping=2.0,
+            stiffness={
+                ".*_wrist_z_joint": 87.0,
+                ".*_wrist_y_joint": 15.0,
+                ".*_wrist_x_joint": 11.0,
+            },
+            damping={
+                ".*_wrist_z_joint": 2.0,
+                ".*_wrist_[xy]_joint": 1.0,
+            },
+            armature={
+                ".*_wrist_z_joint": 0.1398061365,
+                ".*_wrist_y_joint": 0.0234856559,
+                ".*_wrist_x_joint": 0.0175240059,
+            },
             friction=0.0,
         ),
-        "leg_pitch_roll_knee": DCMotorCfg(
-            joint_names_expr=[".*_hip_[xy]_joint", ".*_knee_joint"],
+        "hip_pitch_roll": DCMotorCfg(
+            joint_names_expr=[".*_hip_[xy]_joint"],
             effort_limit=363.0,
             saturation_effort=363.0,
             velocity_limit=20.0,
             stiffness=300.0,
             damping=10.0,
+            friction=0.0,
+        ),
+        "knees": DCMotorCfg(
+            joint_names_expr=[".*_knee_joint"],
+            effort_limit=363.0,
+            saturation_effort=363.0,
+            velocity_limit=20.0,
+            stiffness=300.0,
+            damping=15.0,
             friction=0.0,
         ),
         "hip_yaw": DCMotorCfg(

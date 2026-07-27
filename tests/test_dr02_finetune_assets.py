@@ -32,15 +32,20 @@ def test_dr02_configs_require_tmpdir_and_contain_finetune_gains() -> None:
     for cache_name in ("dr02_standard", "dr02_pro"):
         assert f'"IsaacLab", "{cache_name}"' in source
 
-    for gain in (
-        "stiffness=80.0",
-        "stiffness=90.0",
-        "stiffness=100.0",
-        "stiffness=120.0",
-        "stiffness=150.0",
-        "stiffness=200.0",
-        "stiffness=300.0",
-        "stiffness=2300.0",
-        "stiffness=2800.0",
+    for parameter in (
+        '"left_shoulder_z_joint": 0.765',
+        '"right_shoulder_z_joint": -0.765',
+        '".*_elbow_joint": 1.25',
+        '".*_shoulder_y_joint": 417.0',
+        '".*_shoulder_x_joint": 331.0',
+        '".*_shoulder_z_joint": 329.0',
+        '".*_elbow_joint": 90.0',
+        '".*_wrist_z_joint": 87.0',
+        '".*_wrist_y_joint": 15.0',
+        '".*_wrist_x_joint": 11.0',
+        '".*_shoulder_y_joint": 0.6664750278',
+        '".*_wrist_x_joint": 0.0175240059',
+        '"knees": DCMotorCfg(',
+        "damping=15.0",
     ):
-        assert gain in source
+        assert parameter in source
