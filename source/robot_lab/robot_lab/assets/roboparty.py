@@ -1,3 +1,3 @@
-"""Compatibility exports for assets owned by soulde_robot_zoo."""
+"""Compatibility exports for assets owned by robot_lab_zoo."""
 
-from soulde_robot_zoo.assets.roboparty import *  # noqa: F401, F403
+from robot_lab_zoo.assets.roboparty import *  # noqa: F401, F403

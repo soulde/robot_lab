@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Preserve `DEEPROBOTICS_DR02_STANDARD_CFG` and `DEEPROBOTICS_DR02_PRO_CFG`.
-- Do not add a runtime dependency on soulde_robot_zoo.
+- Do not add a runtime dependency on robot_lab_zoo.
 - Require `TMPDIR` and use only its per-robot IsaacLab cache directories.
 
 ---
