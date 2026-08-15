@@ -1,0 +1,3 @@
+[submodule "source/soulde_robot_zoo"]
+	path = source/soulde_robot_zoo
+	url = https://github.com/soulde/soulde_robot_zoo.git
