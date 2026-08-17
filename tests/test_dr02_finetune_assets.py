@@ -3,9 +3,9 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).parents[1]
-ZOO = ROOT / "source/robot_lab_zoo"
+ZOO = ROOT / "source/robot_learning_lab_zoo"
 DATA = ZOO / "robots/deeprobotics"
-CONFIG = ZOO / "robot_lab_zoo/assets/deeprobotics.py"
+CONFIG = ZOO / "robot_learning_lab_zoo/assets/isaaclab/deeprobotics.py"
 
 
 def _assert_urdf_contract(relative_path: str, expected_joints: int) -> None:

@@ -69,7 +69,10 @@ The table below lists all available environments:
 - Using a python interpreter that has Isaac Lab installed, install the library
 
   ```bash
-  python -m pip install -e source/robot_lab
+  python -m pip install -e 'source/robot_learning_lab_zoo[isaaclab]'
+  python -m pip install -e source/robot_learning_lab_datasets
+  python -m pip install -e 'source/robot_learning_lab_tasks[isaaclab]'
+  python -m pip install -e source/rll_rl
   ```
 
 - Verify that the extension is correctly installed by running the following command to print all the available environments in the extension:
@@ -94,7 +97,7 @@ If everything executes correctly, it should create a file .python.env in the `.v
 
 <summary>Setup as Omniverse Extension (Optional, click to expand)</summary>
 
-We provide an example UI extension that will load upon enabling your extension defined in `source/robot_lab/robot_lab/ui_extension_example.py`.
+The Isaac Lab extension is provided by `source/robot_learning_lab_tasks`.
 
 To enable your extension, follow these steps:
 
@@ -352,11 +355,11 @@ itself. However, its various instances are included in directories within the en
 This looks like as follows:
 
 ```tree
-source/robot_lab/assets/
+source/robot_learning_lab_zoo/robot_learning_lab_zoo/assets/isaaclab/
 ├── __init__.py
 └── unitree.py  # <- this is where we define robot assets
 
-source/robot_lab/tasks/manager_based/locomotion/
+source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/locomotion/
 ├── __init__.py
 └── velocity
     ├── config
@@ -369,7 +372,7 @@ source/robot_lab/tasks/manager_based/locomotion/
     └── velocity_env_cfg.py  # <- this is the base task configuration
 ```
 
-The environments are then registered in the `source/robot_lab/tasks/manager_based/locomotion/velocity/config/unitree_a1/__init__.py`:
+The environments are registered in the corresponding configuration package under `source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/locomotion/velocity/config/`:
 
 ```python
 gym.register(
@@ -431,7 +434,10 @@ In some VsCode versions, the indexing of part of the extensions is missing. In t
 {
     "python.languageServer": "Pylance",
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/source/robot_lab",
+        "${workspaceFolder}/source/robot_learning_lab_zoo",
+        "${workspaceFolder}/source/robot_learning_lab_datasets",
+        "${workspaceFolder}/source/robot_learning_lab_tasks",
+        "${workspaceFolder}/source/rll_rl/src",
         "/<path-to-isaac-lab>/source/isaaclab",
         "/<path-to-isaac-lab>/source/isaaclab_assets",
         "/<path-to-isaac-lab>/source/isaaclab_mimic",

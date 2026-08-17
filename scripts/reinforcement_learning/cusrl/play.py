@@ -68,7 +68,7 @@ from isaaclab.utils.dict import print_dict
 
 from isaaclab_tasks.utils.hydra import hydra_task_config  # noqa: F401
 
-import robot_lab.tasks  # noqa: F401  # isort: skip
+import robot_learning_lab_tasks.tasks.isaaclab  # noqa: F401  # isort: skip
 
 # local imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

@@ -13,8 +13,10 @@ COPY ../ ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
 
 # # Install whatever you need as additional dependencies.
 RUN bash -i -c "source ${HOME}/.bashrc && \
-    cd ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_lab && \
-    pip install -e ."
+    pip install -e '${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_zoo[isaaclab]' && \
+    pip install -e ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_datasets && \
+    pip install -e '${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_tasks[isaaclab]' && \
+    pip install -e ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/rll_rl"
 
 # make working directory as the Isaac Lab directory
 # this is the default directory when the container is run

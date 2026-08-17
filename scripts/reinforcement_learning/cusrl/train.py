@@ -72,7 +72,7 @@ from isaaclab.utils.dict import print_dict
 
 from isaaclab_tasks.utils.hydra import hydra_task_config  # noqa: F401
 
-import robot_lab.tasks  # noqa: F401  # isort: skip
+import robot_learning_lab_tasks.tasks.isaaclab  # noqa: F401  # isort: skip
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True

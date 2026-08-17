@@ -38,7 +38,7 @@ simulation_app = app_launcher.app
 import textwrap
 
 import gymnasium as gym
-import robot_lab.tasks  # noqa: F401
+import robot_learning_lab_tasks.tasks.isaaclab  # noqa: F401
 from prettytable import PrettyTable
 
 

@@ -36,7 +36,7 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import gymnasium as gym
-import robot_lab.tasks  # noqa: F401
+import robot_learning_lab_tasks.tasks.isaaclab  # noqa: F401
 import torch
 
 import isaaclab_tasks  # noqa: F401

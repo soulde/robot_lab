@@ -1,3 +1,12 @@
-[submodule "source/robot_lab_zoo"]
-	path = source/robot_lab_zoo
-	url = https://github.com/soulde/robot_lab_zoo.git
+[submodule "source/robot_learning_lab_zoo"]
+	path = source/robot_learning_lab_zoo
+	url = https://github.com/soulde/robot_learning_lab_zoo.git
+[submodule "source/robot_learning_lab_tasks"]
+	path = source/robot_learning_lab_tasks
+	url = https://github.com/soulde/robot_learning_lab_tasks.git
+[submodule "source/rll_rl"]
+	path = source/rll_rl
+	url = https://github.com/soulde/rll_rl.git
+[submodule "source/robot_learning_lab_datasets"]
+	path = source/robot_learning_lab_datasets
+	url = https://github.com/soulde/robot_learning_lab_datasets.git

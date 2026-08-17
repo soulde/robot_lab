@@ -3,7 +3,7 @@
 ## Scope
 
 Update both DR02 Standard and DR02 Pro in robot_lab to use repository-local,
-finetuned robot descriptions and actuator parameters from robot_lab_zoo.
+finetuned robot descriptions and actuator parameters from robot_learning_lab_zoo.
 Keep all public configuration names and task registrations unchanged.
 
 ## Asset Layout
