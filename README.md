@@ -63,16 +63,16 @@ The table below lists all available environments:
 - Clone this repository separately from the Isaac Lab installation (i.e. outside the `IsaacLab` directory):
 
   ```bash
-  git clone https://github.com/fan-ziqi/robot_lab.git
+  git clone --recurse-submodules https://github.com/soulde/robot_lab.git
   ```
 
 - Using a python interpreter that has Isaac Lab installed, install the library
 
   ```bash
-  python -m pip install -e 'source/robot_learning_lab_zoo[isaaclab]'
-  python -m pip install -e source/robot_learning_lab_datasets
-  python -m pip install -e 'source/robot_learning_lab_tasks[isaaclab]'
-  python -m pip install -e source/rll_rl
+  uv pip install -e 'source/robot_learning_lab_zoo[isaaclab]'
+  uv pip install -e source/robot_learning_lab_datasets
+  uv pip install -e 'source/robot_learning_lab_tasks[isaaclab]'
+  uv pip install -e source/rll_rl
   ```
 
 - Verify that the extension is correctly installed by running the following command to print all the available environments in the extension:

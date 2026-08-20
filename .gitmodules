@@ -10,3 +10,6 @@
 [submodule "source/robot_learning_lab_datasets"]
 	path = source/robot_learning_lab_datasets
 	url = https://github.com/soulde/robot_learning_lab_datasets.git
+[submodule "source/robot_learning_lab_sim_infer"]
+	path = source/robot_learning_lab_sim_infer
+	url = https://github.com/soulde/robot_learning_lab_sim_infer.git
