@@ -38,3 +38,6 @@ _build
 
 # LSP
 pyrightconfig.json
+
+# Local isolated development worktrees
+.worktrees/
