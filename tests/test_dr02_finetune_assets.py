@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -6,6 +7,19 @@ ROOT = Path(__file__).parents[1]
 ZOO = ROOT / "source/robot_learning_lab_zoo"
 DATA = ZOO / "robots/deeprobotics"
 CONFIG = ZOO / "robot_learning_lab_zoo/assets/isaaclab/deeprobotics.py"
+PRO_ENV_CONFIG = (
+    ROOT
+    / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/locomotion/velocity"
+    / "config/humanoid/deeprobotics_dr02_pro/rough_env_cfg.py"
+)
+AMP_ENV_CONFIG = (
+    ROOT
+    / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp/config/dr02/flat_env_cfg.py"
+)
+AMP_AGENT_CONFIG = (
+    ROOT
+    / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp/config/dr02/agents/rsl_rl_amp_cfg.py"
+)
 
 
 def _assert_urdf_contract(relative_path: str, expected_joints: int) -> None:
@@ -42,3 +56,29 @@ def test_dr02_configs_define_tmpdir_fallback_and_finetune_gains() -> None:
         "damping=0.25",
     ):
         assert parameter in source
+
+
+def test_pro_env_does_not_reward_fixed_neck_joints() -> None:
+    urdf = ET.parse(DATA / "dr02_pro_description/urdf/dr02_pro.urdf").getroot()
+    joint_types = {joint.attrib["name"]: joint.attrib["type"] for joint in urdf.findall("joint")}
+
+    assert joint_types["neck_z_joint"] == "fixed"
+    assert joint_types["neck_y_joint"] == "fixed"
+    assert "joint_deviation_head_l1" not in PRO_ENV_CONFIG.read_text(encoding="utf-8")
+
+
+def test_dr02_amp_contract_matches_external_body_order() -> None:
+    bodies = json.loads(
+        (Path.home() / "GMR-private/retarget_data/dr02/bodies.json").read_text(encoding="utf-8")
+    )
+    source = AMP_ENV_CONFIG.read_text(encoding="utf-8")
+    agent_source = AMP_AGENT_CONFIG.read_text(encoding="utf-8")
+
+    assert tuple(bodies["body_names"]) == tuple(
+        name.strip().strip('"')
+        for name in source.split("DR02_AMP_BODY_NAMES = (", 1)[1].split(")", 1)[0].split(",")
+        if name.strip()
+    )
+    assert "DR02_AMP_KEY_BODY_NAMES" in source
+    assert 'motion_dir' in agent_source
+    assert 'body_names = body_names' in agent_source
