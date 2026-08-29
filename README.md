@@ -398,6 +398,45 @@ gym.register(
 )
 ```
 
+<!-- MJLAB-VERIFY-START -->
+## MJLab 环境验证
+
+在独立 mjlab 虚拟环境（`~/mjlab/.venv`）中，用 mjlab 内置 PPO 逐一训练
+robot_lab 的全部 MJLab velocity 任务（4096 并行环境，tensorboard 记录，
+默认迭代数）。AMP 任务需要 GMR 动作数据（本机无 `~/GMR-private`），不在
+内置 PPO 验证范围内。由 `scripts/mjlab_ppo_verify.sh` 顺序执行，本表由
+`scripts/update_mjlab_verify_table.py` 依据 `logs/mjlab_ppo/status.tsv` 自动更新。
+
+| 任务 | 状态 |
+|------|------|
+| RobotLab-MJLab-Velocity-Flat-ANYmal-D | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Agibot-D1 | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Flat-Booster-T1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-DDTRobot-Tita | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-DR02 | ❌ 失败：ValueError: njmax overflow (njmax must be >= 358) |
+| RobotLab-MJLab-Velocity-Flat-DeepRobotics-Lite3 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Deeprobotics-M20 | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T1 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T2 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Flat-HandStand-Unitree-A1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Gen1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Z1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-MagicLab-Dog | ✅ |
+| RobotLab-MJLab-Velocity-Flat-MagicLab-Dog-W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Openloong-Loong | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-RoboParty-ATOM01 | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-RobotEra-Xbot | ❌ 失败：RuntimeError: Failed to allocate 20529152000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Unitree-A1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Unitree-B2 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Unitree-B2W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Unitree-G1 | ⏸️ 被 8 点截止中断 |
+| RobotLab-MJLab-Velocity-Flat-Unitree-Go2 | ✅ |
+
+环境基础验证：mjlab venv 安装（editable + mjlab extra）✅、任务注册 ✅、
+rll_rl 单元测试 50 passed ✅（2026-08-29）。
+
+<!-- MJLAB-VERIFY-END -->
+
 ## Tensorboard
 
 To view tensorboard, run:
