@@ -18,6 +18,11 @@ declare -A OVERRIDE=(
   [RobotLab-MJLab-Velocity-Flat-RoboParty-ATOM01]="--env.scene.num-envs 1024"
   [RobotLab-MJLab-Velocity-Flat-RobotEra-Xbot]="--env.scene.num-envs 1024"
   [RobotLab-MJLab-Velocity-Flat-Unitree-B2W]="--env.scene.num-envs 1024"
+  [RobotLab-MJLab-Velocity-Flat-Unitree-Go2W]="--env.scene.num-envs 1024"
+  [RobotLab-MJLab-Velocity-Flat-Unitree-H1]="--env.scene.num-envs 1024"
+  [RobotLab-MJLab-Velocity-Flat-Zsibot-ZSL1W]="--env.scene.num-envs 1024"
+  [RobotLab-MJLab-Velocity-Rough-DDTRobot-Tita]="--env.scene.num-envs 1024"
+  [RobotLab-MJLab-Velocity-Rough-Deeprobotics-M20]="--env.scene.num-envs 1024"
 )
 
 awk -F'\t' '$2 == "FAIL" {print $3}' "$STATUS" | sort -u | while IFS= read -r task; do
