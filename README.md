@@ -410,14 +410,14 @@ robot_lab 的全部 MJLab velocity 任务（4096 并行环境，tensorboard 记�
 | 任务 | 状态 |
 |------|------|
 | RobotLab-MJLab-Velocity-Flat-ANYmal-D | ✅ |
-| RobotLab-MJLab-Velocity-Flat-Agibot-D1 | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Flat-Agibot-D1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Booster-T1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-DDTRobot-Tita | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-DR02 | ❌ 失败：ValueError: njmax overflow (njmax must be >= 358) |
+| RobotLab-MJLab-Velocity-Flat-DR02 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
 | RobotLab-MJLab-Velocity-Flat-DeepRobotics-Lite3 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Deeprobotics-M20 | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T1 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
-| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T2 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T2 | ⏸️ 被 8 点截止中断 |
 | RobotLab-MJLab-Velocity-Flat-HandStand-Unitree-A1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Gen1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Z1 | ✅ |
