@@ -18,6 +18,8 @@ fi
 # env counts for models that exceed GPU memory at 4096 envs.
 declare -A OVERRIDE=(
   [RobotLab-MJLab-Velocity-Flat-Unitree-G1]="--agent.max-iterations 3000"
+  [RobotLab-MJLab-Velocity-Rough-Zsibot-ZSL1]="--agent.max-iterations 3000"
+  [RobotLab-MJLab-Velocity-Rough-Zsibot-ZSL1W]="--agent.max-iterations 3000"
   [RobotLab-MJLab-Velocity-Flat-DDTRobot-Tita]="--env.scene.num-envs 1024"
   [RobotLab-MJLab-Velocity-Flat-Deeprobotics-M20]="--env.scene.num-envs 1024"
   [RobotLab-MJLab-Velocity-Flat-MagicLab-Dog-W]="--env.scene.num-envs 1024"
