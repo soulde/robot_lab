@@ -28,8 +28,14 @@ declare -A OVERRIDE=(
   [RobotLab-MJLab-Velocity-Flat-RobotEra-Xbot]="--env.scene.num-envs 1024"
   [RobotLab-MJLab-Velocity-Flat-Unitree-B2W]="--env.scene.num-envs 1024"
 )
-# Rough terrain needs far more GPU memory than flat; run all rough tasks at 2048.
-for _t in $(grep "Velocity-Rough" "$TASKS"); do OVERRIDE[$_t]="--env.scene.num-envs 2048"; done
+# Rough terrain needs far more GPU memory than flat; run all rough tasks at
+# 2048 envs, merging with (not clobbering) the per-task overrides above.
+for _t in $(grep "Velocity-Rough" "$TASKS"); do
+  OVERRIDE[$_t]="${OVERRIDE[$_t]:-} --env.scene.num-envs 2048"
+done
+# Marathon iteration budgets (30k-50k, 10h+) defeat verification batching;
+# cap every task at 3000 iterations unless overridden above.
+DEFAULT_OVERRIDE="--agent.max-iterations 3000"
 
 while IFS= read -r task; do
   [ -f "$LOGROOT/STOP" ] && { echo "$(date +%FT%T)	STOPPED" >> "$STATUS"; break; }
@@ -38,7 +44,7 @@ while IFS= read -r task; do
   esac
   [ -f "$LOGROOT/${task}.done" ] && continue
   log="$LOGROOT/${task}.log"
-  extra="${OVERRIDE[$task]:-}"
+  extra="${OVERRIDE[$task]:-$DEFAULT_OVERRIDE}"
   echo "$(date +%FT%T)	START	$task" >> "$STATUS"
   if WANDB_DISABLED=true timeout 21600 "$VENV_BIN/train" "$task" \
       --agent.logger tensorboard --env.scene.num-envs 4096 $extra \

@@ -412,25 +412,59 @@ robot_lab 的全部 MJLab velocity 任务（4096 并行环境，tensorboard 记�
 | RobotLab-MJLab-Velocity-Flat-ANYmal-D | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Agibot-D1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Booster-T1 | ✅ |
-| RobotLab-MJLab-Velocity-Flat-DDTRobot-Tita | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-DR02 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Flat-DDTRobot-Tita | ✅ |
+| RobotLab-MJLab-Velocity-Flat-DR02 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-DeepRobotics-Lite3 | ✅ |
-| RobotLab-MJLab-Velocity-Flat-Deeprobotics-M20 | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Deeprobotics-M20 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T1 | ✅ |
-| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T2 | ⏸️ 被 8 点截止中断 |
+| RobotLab-MJLab-Velocity-Flat-FFTAI-GR1T2 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-HandStand-Unitree-A1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Gen1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-MagicLab-Bot-Z1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-MagicLab-Dog | ✅ |
-| RobotLab-MJLab-Velocity-Flat-MagicLab-Dog-W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-Openloong-Loong | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-RoboParty-ATOM01 | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-RobotEra-Xbot | ❌ 失败：RuntimeError: Failed to allocate 20529152000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-MagicLab-Dog-W | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Openloong-Loong | ✅ |
+| RobotLab-MJLab-Velocity-Flat-RoboParty-ATOM01 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-RobotEra-Xbot | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Unitree-A1 | ✅ |
 | RobotLab-MJLab-Velocity-Flat-Unitree-B2 | ✅ |
-| RobotLab-MJLab-Velocity-Flat-Unitree-B2W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
-| RobotLab-MJLab-Velocity-Flat-Unitree-G1 | ⏸️ 被 8 点截止中断 |
+| RobotLab-MJLab-Velocity-Flat-Unitree-B2W | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Unitree-G1 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Unitree-G1-Dex3 | 🏃 训练中 |
+| RobotLab-MJLab-Velocity-Flat-Unitree-G1-Dex3-Backpack | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
 | RobotLab-MJLab-Velocity-Flat-Unitree-Go2 | ✅ |
+| RobotLab-MJLab-Velocity-Flat-Unitree-Go2W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Unitree-H1 | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Flat-Zsibot-ZSL1 | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Flat-Zsibot-ZSL1W | ❌ 失败：RuntimeError: Failed to allocate 123174912000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-ANYmal-D | ✅ |
+| RobotLab-MJLab-Velocity-Rough-Agibot-D1 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Rough-Booster-T1 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-DDTRobot-Tita | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-DR02 | ❌ 失败：ValueError: nconmax overflow (nconmax must be >= 242) |
+| RobotLab-MJLab-Velocity-Rough-DeepRobotics-Lite3 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-Deeprobotics-DR02-Pro | ✅ |
+| RobotLab-MJLab-Velocity-Rough-Deeprobotics-M20 | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-FFTAI-GR1T1 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-FFTAI-GR1T2 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-HandStand-Unitree-A1 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-MagicLab-Bot-Gen1 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Rough-MagicLab-Bot-Z1 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-MagicLab-Dog | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Rough-MagicLab-Dog-W | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-Openloong-Loong | ✅ |
+| RobotLab-MJLab-Velocity-Rough-RoboParty-ATOM01 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Rough-RobotEra-Xbot | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Rough-Unitree-A1 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-Unitree-B2 | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Rough-Unitree-B2W | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-Unitree-G1 | ❌ 失败：ValueError: nconmax overflow (nconmax must be >= 179) |
+| RobotLab-MJLab-Velocity-Rough-Unitree-G1-Dex3 | ❌ 失败：ValueError: The observation group 'actor' returned by the environment contains N |
+| RobotLab-MJLab-Velocity-Rough-Unitree-G1-Dex3-Backpack | ❌ 失败：RuntimeError: normal expects all elements of std >= 0.0 |
+| RobotLab-MJLab-Velocity-Rough-Unitree-Go2 | ✅ |
+| RobotLab-MJLab-Velocity-Rough-Unitree-Go2W | ❌ 失败：RuntimeError: Failed to allocate 61587456000 bytes on device 'cuda:0' |
+| RobotLab-MJLab-Velocity-Rough-Unitree-H1 | ❌ 失败：ValueError: The observation group 'critic' returned by the environment contains  |
+| RobotLab-MJLab-Velocity-Rough-Zsibot-ZSL1 | ❌ 失败，见 logs/mjlab_ppo/ |
 
 环境基础验证：mjlab venv 安装（editable + mjlab extra）✅、任务注册 ✅、
 rll_rl 单元测试 50 passed ✅（2026-08-29）。
