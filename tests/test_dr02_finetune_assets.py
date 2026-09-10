@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import ast
 import xml.etree.ElementTree as ET
 
 
@@ -19,6 +20,11 @@ AMP_ENV_CONFIG = (
 AMP_AGENT_CONFIG = (
     ROOT
     / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp/config/dr02/agents/rsl_rl_amp_cfg.py"
+)
+AMP_TRACKING_CONFIG = (
+    ROOT
+    / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp"
+    / "tracking_env_cfg.py"
 )
 
 
@@ -82,3 +88,79 @@ def test_dr02_amp_contract_matches_external_body_order() -> None:
     assert "DR02_AMP_KEY_BODY_NAMES" in source
     assert 'motion_dir' in agent_source
     assert 'body_names = body_names' in agent_source
+
+
+def test_dr02_amp_velocity_command_visualization_is_enabled_in_play() -> None:
+    tracking_source = (
+        ROOT
+        / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp/tracking_env_cfg.py"
+    ).read_text(encoding="utf-8")
+    play_source = (ROOT / "scripts/reinforcement_learning/rsl_rl/play.py").read_text(encoding="utf-8")
+
+    assert "debug_vis=True" in tracking_source
+    assert "env_cfg.commands.base_velocity.debug_vis = False" not in play_source
+
+
+def test_amp_viewer_is_not_bound_to_robot_root() -> None:
+    tracking_source = (
+        ROOT
+        / "source/robot_learning_lab_tasks/robot_learning_lab_tasks/tasks/isaaclab/manager_based/amp/tracking_env_cfg.py"
+    ).read_text(encoding="utf-8")
+
+    assert 'self.viewer.origin_type = "world"' in tracking_source
+    assert 'self.viewer.asset_name = "robot"' not in tracking_source
+
+
+def test_amp_observation_entities_preserve_configured_feature_order() -> None:
+    tree = ast.parse(AMP_TRACKING_CONFIG.read_text(encoding="utf-8"))
+    ordered_amp_entities = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+            continue
+        if node.func.id != "SceneEntityCfg":
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in node.keywords}
+        selected_names = keywords.get("joint_names", keywords.get("body_names"))
+        if not isinstance(selected_names, ast.List) or selected_names.elts:
+            continue
+        preserve_order = keywords.get("preserve_order")
+        ordered_amp_entities.append(
+            isinstance(preserve_order, ast.Constant) and preserve_order.value is True
+        )
+
+    assert ordered_amp_entities == [True, True, True]
+
+
+def test_amp_randomizes_existing_arm_motor_armatures_at_startup() -> None:
+    source = AMP_TRACKING_CONFIG.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    assignments = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and any(
+            isinstance(target, ast.Name) and target.id == "randomize_motor_armature"
+            for target in node.targets
+        )
+    ]
+
+    assert len(assignments) == 1
+    event_source = ast.get_source_segment(source, assignments[0].value)
+    assert event_source is not None
+    assert "func=base_mdp_events.randomize_joint_parameters" in event_source
+    assert 'mode="startup"' in event_source
+    assert '"armature_distribution_params": (0.9, 1.1)' in event_source
+    assert '"operation": "scale"' in event_source
+    for joint_pattern in (
+        ".*_shoulder_[xyz]_joint",
+        ".*_elbow_joint",
+        ".*_wrist_[xyz]_joint",
+    ):
+        assert f'"{joint_pattern}"' in event_source
+
+
+def test_dr02_amp_uses_reduced_style_reward_scale() -> None:
+    source = AMP_AGENT_CONFIG.read_text(encoding="utf-8")
+
+    assert "self.algorithm.task_reward_scale = 1.0" in source
+    assert "self.algorithm.style_reward_scale = 0.1" in source
