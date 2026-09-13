@@ -64,26 +64,44 @@ order using the existing AMP joint-contract behavior.
 
 ## Architecture
 
-### `SomaMotionDataset`
+### Dataset class hierarchy
 
-Add `rsl_rl/datasets/soma_motion_dataset.py` in the local RSL-RL fork. The
-class presents the same constructor and `sample_amp_observations(batch_size)`
-interface as the existing `MotionDataset`.
+Add a `BaseMotionDataset` in the local RSL-RL fork. It owns the format-neutral
+AMP data flow:
 
-The SOMA-specific layer performs strict metadata validation before delegating
-the numerical loading and AMP feature construction to the existing loader:
+1. resolve selected NPZ basenames using the existing regex/list semantics;
+2. load common numerical arrays into tensors;
+3. apply the existing configured joint-name contract and reorder joint
+   positions/velocities;
+4. build root-frame AMP observations in the established feature order;
+5. exclude invalid cross-file transitions and preload/sample transitions.
 
-1. Resolve the selected NPZ basenames using the same regex/list semantics.
-2. Require all shared numerical fields and SOMA name metadata.
-3. Reject duplicate joint or body names.
-4. Verify every selected file uses one consistent embedded joint/body
-   contract.
-5. Verify the embedded body sequence exactly matches configured `body_names`.
-6. Allow the existing loader to validate and reorder joint columns and build
-   transitions.
+`MotionDataset` remains the BeyondMimic-compatible subclass. Its subclass
+loader preserves the current compatibility rules, including external name
+contracts for files that do not embed metadata. No SOMA-specific branches are
+added to this class.
 
-Sharing the current feature builder preserves the discriminator's established
-input order:
+Add `SomaMotionDataset` as a separate subclass with the same constructor and
+`sample_amp_observations(batch_size)` interface. Its only format-specific
+responsibilities are:
+
+1. require all common numerical fields and embedded `joint_names`/
+   `body_names`;
+2. reject duplicate joint or body names;
+3. verify every selected file uses one consistent embedded joint/body
+   contract;
+4. verify the embedded body sequence exactly matches the configured
+   `body_names` sequence;
+5. pass the normalized motion record to the base-class feature and transition
+   pipeline.
+
+The configured body order remains authoritative for the AMP body feature
+contract, but the SOMA subclass requires it to match the file order exactly;
+it does not reorder body arrays. This prevents the old 30-body contract from
+being silently applied to a 34-body SOMA tensor.
+
+The base-class feature builder preserves the discriminator's established input
+order:
 
 1. root height;
 2. root orientation 6D;
@@ -156,4 +174,3 @@ follow-up must provide:
 - the SOMA motion directory and file selection;
 - `motion_dataset_format="soma"`;
 - the complete new 34-body sequence.
-
