@@ -46,6 +46,7 @@ docker_run_flags=(
   --user "$(id -u):$(id -g)"
   -e HOME=/tmp/home
   -e OMNI_KIT_ACCEPT_EULA=YES
+  -e ACCEPT_EULA=Y
   -e RLL_MOTION_DATA_ROOT=/workspace/motion-data/dr02
   -e TERM="${TERM:-xterm}"
   -w /workspace/robot_lab
@@ -55,12 +56,31 @@ docker_run_flags=(
 container_exists() { docker ps -a --format '{{.Names}}' | grep -qx "$NAME"; }
 container_running() { docker ps --format '{{.Names}}' | grep -qx "$NAME"; }
 
+PY=/workspace/isaaclab/_isaac_sim/python.sh
+
+ensure_passwd() {
+  # uid/gid mapped from the host have no passwd entry in the image; torch
+  # inductor (getpass.getuser) and friends crash without one
+  docker exec -u root "$NAME" groupadd -g "$(id -g)" rll 2>/dev/null || true
+  docker exec -u root "$NAME" useradd -u "$(id -u)" -g "$(id -g)" -M -d /tmp/home -s /bin/bash rll 2>/dev/null || true
+}
+
+install_pkgs() {
+  # editable installs live in the container's ephemeral HOME; redo on each start
+  echo "[INFO] Installing robot_lab packages (idempotent)"
+  docker exec "$NAME" "$PY" -m pip install -q --no-deps     -e /workspace/robot_lab/source/robot_learning_lab_tasks     -e /workspace/robot_lab/source/robot_learning_lab_zoo     -e /workspace/robot_lab/source/rll_rl     -e /workspace/humanoid_amp/third_party/rsl_rl
+  # --video support (not in the image by default)
+  docker exec "$NAME" "$PY" -m pip install -q "moviepy>=1.0.3,<2" || true
+}
+
 cmd_start() {
   if container_running; then echo "[OK] $NAME already running"; return 0; fi
   if container_exists; then docker rm "$NAME" >/dev/null; fi
   mkdir -p /tmp/home
   echo "[INFO] Starting $NAME from $IMAGE"
-  docker run -d "${docker_run_flags[@]}" "$IMAGE" sleep infinity
+  docker run -d --entrypoint "" "${docker_run_flags[@]}" "$IMAGE" sleep infinity
+  ensure_passwd
+  install_pkgs
   echo "[OK] Container up. Use './docker/dr02.sh shell' to enter."
 }
 
@@ -87,7 +107,7 @@ cmd_exec() {
 }
 
 cmd_train() {
-  cmd_exec python scripts/reinforcement_learning/rsl_rl/train.py --task RobotLab-Isaac-AMP-Rough-Deeprobotics-DR02-Pro-v0 "$@"
+  cmd_exec "$PY" scripts/reinforcement_learning/rsl_rl/train.py --task RobotLab-Isaac-AMP-Rough-Deeprobotics-DR02-Pro-v0 "$@"
 }
 
 cmd_play() {
