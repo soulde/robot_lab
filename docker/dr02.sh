@@ -46,7 +46,7 @@ docker_run_flags=(
   --user "$(id -u):$(id -g)"
   -e HOME=/tmp/home
   -e OMNI_KIT_ACCEPT_EULA=YES
-  -e RLL_MOTION_DATA_ROOT=/workspace/motion-data
+  -e RLL_MOTION_DATA_ROOT=/workspace/motion-data/dr02
   -e TERM="${TERM:-xterm}"
   -w /workspace/robot_lab
   "${mounts[@]}"
