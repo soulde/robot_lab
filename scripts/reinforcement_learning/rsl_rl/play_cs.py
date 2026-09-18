@@ -44,6 +44,7 @@ cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
+cli_args.strip_deprecated_headless()
 args_cli, hydra_args = parser.parse_known_args()
 # always enable cameras to record video
 if args_cli.video:
@@ -59,10 +60,19 @@ simulation_app = app_launcher.app
 """Check for installed RSL-RL version."""
 
 import importlib.metadata as metadata
+import sys
 
 from packaging import version
 
+# check minimum supported rsl-rl version (custom 5.x fork with AMP support)
+RSL_RL_VERSION = "5.0.1"
 installed_version = metadata.version("rsl-rl-lib")
+if version.parse(installed_version) < version.parse(RSL_RL_VERSION):
+    print(
+        f"Please install the correct version of RSL-RL.\nExisting version is: '{installed_version}'"
+        f" and required version is: '{RSL_RL_VERSION}'."
+    )
+    sys.exit(1)
 
 """Rest everything follows."""
 
@@ -86,13 +96,7 @@ from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils.assets import retrieve_file_path
 from isaaclab.utils.dict import print_dict
 
-from isaaclab_rl.rsl_rl import (
-    RslRlBaseRunnerCfg,
-    RslRlVecEnvWrapper,
-    export_policy_as_jit,
-    export_policy_as_onnx,
-    handle_deprecated_rsl_rl_cfg,
-)
+from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper, handle_deprecated_rsl_rl_cfg
 from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
 from isaaclab_tasks.utils import get_checkpoint_path
@@ -172,11 +176,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # disable randomization for play
     env_cfg.observations.policy.enable_corruption = False
-    # remove random pushing
-    env_cfg.events.randomize_apply_external_force_torque = None
-    env_cfg.events.push_robot = None
-    env_cfg.curriculum.command_levels_lin_vel = None
-    env_cfg.curriculum.command_levels_ang_vel = None
+    # remove random pushing (term names differ across task families, e.g. AMP tasks use randomize_push_robot)
+    for event_name in ("randomize_apply_external_force_torque", "push_robot", "randomize_push_robot"):
+        if hasattr(env_cfg.events, event_name):
+            setattr(env_cfg.events, event_name, None)
+    # disable velocity command curricula (absent in AMP tasks)
+    for term_name in ("command_levels_lin_vel", "command_levels_ang_vel"):
+        if hasattr(env_cfg.curriculum, term_name):
+            setattr(env_cfg.curriculum, term_name, None)
 
     if args_cli.keyboard:
         env_cfg.scene.num_envs = 1
@@ -248,29 +255,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # export the trained policy to JIT and ONNX formats
     export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
-
-    if version.parse(installed_version) >= version.parse("4.0.0"):
-        # use the new export functions for rsl-rl >= 4.0.0
-        runner.export_policy_to_jit(path=export_model_dir, filename="policy.pt")
-        runner.export_policy_to_onnx(path=export_model_dir, filename="policy.onnx")
-    else:
-        # extract the neural network for rsl-rl < 4.0.0
-        if version.parse(installed_version) >= version.parse("2.3.0"):
-            policy_nn = runner.alg.policy
-        else:
-            policy_nn = runner.alg.actor_critic
-
-        # extract the normalizer
-        if hasattr(policy_nn, "actor_obs_normalizer"):
-            normalizer = policy_nn.actor_obs_normalizer
-        elif hasattr(policy_nn, "student_obs_normalizer"):
-            normalizer = policy_nn.student_obs_normalizer
-        else:
-            normalizer = None
-
-        # export to JIT and ONNX
-        export_policy_as_jit(policy_nn, normalizer=normalizer, path=export_model_dir, filename="policy.pt")
-        export_policy_as_onnx(policy_nn, normalizer=normalizer, path=export_model_dir, filename="policy.onnx")
+    runner.export_policy_to_jit(path=export_model_dir, filename="policy.pt")
+    runner.export_policy_to_onnx(path=export_model_dir, filename="policy.onnx")
 
     dt = env.unwrapped.step_dt
 
@@ -287,10 +273,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             # env stepping
             obs, _, dones, _ = env.step(actions)
             # reset recurrent states for episodes that have terminated
-            if version.parse(installed_version) >= version.parse("4.0.0"):
-                policy.reset(dones)
-            else:
-                policy_nn.reset(dones)
+            policy.reset(dones)
         if args_cli.video:
             timestep += 1
             # Exit the play loop after recording one video

@@ -41,6 +41,7 @@ parser.add_argument(
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
+cli_args.strip_deprecated_headless()
 args_cli, hydra_args = parser.parse_known_args()
 
 # always enable cameras to record video
@@ -61,8 +62,8 @@ import platform
 
 from packaging import version
 
-# check minimum supported rsl-rl version
-RSL_RL_VERSION = "3.0.1"
+# check minimum supported rsl-rl version (custom 5.x fork with AMP support)
+RSL_RL_VERSION = "5.0.1"
 installed_version = metadata.version("rsl-rl-lib")
 if version.parse(installed_version) < version.parse(RSL_RL_VERSION):
     if platform.system() == "Windows":

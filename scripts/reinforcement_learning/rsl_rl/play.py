@@ -43,10 +43,14 @@ cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
+cli_args.strip_deprecated_headless()
 args_cli, hydra_args = parser.parse_known_args()
 # always enable cameras to record video
 if args_cli.video:
     args_cli.enable_cameras = True
+    # video recording captures frames from a visualizer; auto-enable the Kit one
+    if not getattr(args_cli, "visualizer", None):
+        args_cli.visualizer = ["kit"]
 
 # clear out sys.argv for Hydra
 sys.argv = [sys.argv[0]] + hydra_args
@@ -58,10 +62,19 @@ simulation_app = app_launcher.app
 """Check for installed RSL-RL version."""
 
 import importlib.metadata as metadata
+import sys
 
 from packaging import version
 
+# check minimum supported rsl-rl version (custom 5.x fork with AMP support)
+RSL_RL_VERSION = "5.0.1"
 installed_version = metadata.version("rsl-rl-lib")
+if version.parse(installed_version) < version.parse(RSL_RL_VERSION):
+    print(
+        f"Please install the correct version of RSL-RL.\nExisting version is: '{installed_version}'"
+        f" and required version is: '{RSL_RL_VERSION}'."
+    )
+    sys.exit(1)
 
 """Rest everything follows."""
 
@@ -84,13 +97,7 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.utils.assets import retrieve_file_path
 from isaaclab.utils.dict import print_dict
 
-from isaaclab_rl.rsl_rl import (
-    RslRlBaseRunnerCfg,
-    RslRlVecEnvWrapper,
-    export_policy_as_jit,
-    export_policy_as_onnx,
-    handle_deprecated_rsl_rl_cfg,
-)
+from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg, RslRlVecEnvWrapper, handle_deprecated_rsl_rl_cfg
 from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
 from isaaclab_tasks.utils import get_checkpoint_path
@@ -132,11 +139,14 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # disable randomization for play
     env_cfg.observations.policy.enable_corruption = False
-    # remove random pushing
-    env_cfg.events.randomize_apply_external_force_torque = None
-    env_cfg.events.push_robot = None
-    env_cfg.curriculum.command_levels_lin_vel = None
-    env_cfg.curriculum.command_levels_ang_vel = None
+    # remove random pushing (term names differ across task families, e.g. AMP tasks use randomize_push_robot)
+    for event_name in ("randomize_apply_external_force_torque", "push_robot", "randomize_push_robot"):
+        if hasattr(env_cfg.events, event_name):
+            setattr(env_cfg.events, event_name, None)
+    # disable velocity command curricula (absent in AMP tasks)
+    for term_name in ("command_levels_lin_vel", "command_levels_ang_vel"):
+        if hasattr(env_cfg.curriculum, term_name):
+            setattr(env_cfg.curriculum, term_name, None)
 
     if args_cli.keyboard:
         env_cfg.scene.num_envs = 1
@@ -170,24 +180,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
 
+    # Isaac Lab v3.0.0-EA: rgb_array + gym RecordVideo are gone; use VideoRecorderCfg
+    from isaaclab_rl.entrypoints.common import apply_video_recording
+
+    apply_video_recording(env_cfg, log_dir, args_cli, subdir="play", checkpoint_path=resume_path)
+
     # create isaac environment
-    env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
+    env = gym.make(args_cli.task, cfg=env_cfg)
 
     # convert to single-agent instance if required by the RL algorithm
     if isinstance(env.unwrapped, DirectMARLEnv):
         env = multi_agent_to_single_agent(env)
-
-    # wrap for video recording
-    if args_cli.video:
-        video_kwargs = {
-            "video_folder": os.path.join(log_dir, "videos", "play"),
-            "step_trigger": lambda step: step == 0,
-            "video_length": args_cli.video_length,
-            "disable_logger": True,
-        }
-        print("[INFO] Recording videos during training.")
-        print_dict(video_kwargs, nesting=4)
-        env = gym.wrappers.RecordVideo(env, **video_kwargs)
 
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
@@ -207,34 +210,17 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # export the trained policy to JIT and ONNX formats
     export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
-
-    if version.parse(installed_version) >= version.parse("4.0.0"):
-        # use the new export functions for rsl-rl >= 4.0.0
-        runner.export_policy_to_jit(path=export_model_dir, filename="policy.pt")
-        runner.export_policy_to_onnx(path=export_model_dir, filename="policy.onnx")
-    else:
-        # extract the neural network for rsl-rl < 4.0.0
-        if version.parse(installed_version) >= version.parse("2.3.0"):
-            policy_nn = runner.alg.policy
-        else:
-            policy_nn = runner.alg.actor_critic
-
-        # extract the normalizer
-        if hasattr(policy_nn, "actor_obs_normalizer"):
-            normalizer = policy_nn.actor_obs_normalizer
-        elif hasattr(policy_nn, "student_obs_normalizer"):
-            normalizer = policy_nn.student_obs_normalizer
-        else:
-            normalizer = None
-
-        # export to JIT and ONNX
-        export_policy_as_jit(policy_nn, normalizer=normalizer, path=export_model_dir, filename="policy.pt")
-        export_policy_as_onnx(policy_nn, normalizer=normalizer, path=export_model_dir, filename="policy.onnx")
+    runner.export_policy_to_jit(path=export_model_dir, filename="policy.pt")
+    runner.export_policy_to_onnx(path=export_model_dir, filename="policy.onnx")
 
     dt = env.unwrapped.step_dt
 
     # reset environment
-    obs = env.get_observations()
+    if args_cli.video:
+        # gym RecordVideo needs a reset() to arm its step trigger
+        obs, _ = env.reset()
+    else:
+        obs = env.get_observations()
     timestep = 0
     # simulate environment
     while simulation_app.is_running():
@@ -246,10 +232,7 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             # env stepping
             obs, _, dones, _ = env.step(actions)
             # reset recurrent states for episodes that have terminated
-            if version.parse(installed_version) >= version.parse("4.0.0"):
-                policy.reset(dones)
-            else:
-                policy_nn.reset(dones)
+            policy.reset(dones)
         if args_cli.video:
             timestep += 1
             # Exit the play loop after recording one video

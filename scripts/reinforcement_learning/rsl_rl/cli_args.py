@@ -16,6 +16,17 @@ if TYPE_CHECKING:
     from isaaclab_rl.rsl_rl import RslRlBaseRunnerCfg
 
 
+def strip_deprecated_headless() -> None:
+    """Drop ``--headless`` from sys.argv.
+
+    Isaac Lab v3.0.0-EA removed the flag (headless is the default; use --viz).
+    Passing it anyway leaks into Hydra's args and aborts the run.
+    """
+    import sys
+
+    sys.argv = [arg for arg in sys.argv if arg != "--headless"]
+
+
 def add_rsl_rl_args(parser: argparse.ArgumentParser):
     """Add RSL-RL arguments to the parser.
 
