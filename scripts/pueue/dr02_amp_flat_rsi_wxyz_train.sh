@@ -23,6 +23,6 @@ TRAIN_CMD=(uv run --active --no-project --offline python scripts/reinforcement_l
   --logger tensorboard \
   --run_name ea_amp_flat_rsi_wxyz_20260919_s42)
 if [[ -n "${DR02_RESUME_RUN:-}" ]]; then
-  TRAIN_CMD+=(--resume --load_run "$DR02_RESUME_RUN" --load_checkpoint "${DR02_RESUME_CHECKPOINT:-model_1000.pt}")
+  TRAIN_CMD+=(--resume --load_run "$DR02_RESUME_RUN" --checkpoint "${DR02_RESUME_CHECKPOINT:-model_1000.pt}")
 fi
 exec "${TRAIN_CMD[@]}" "physics=$PHYSICS_BACKEND"
