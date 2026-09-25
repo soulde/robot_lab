@@ -5,7 +5,7 @@ set -euo pipefail
 
 cd /home/jvwei/robot_lab
 source /home/jvwei/env_isaaclab_ea/bin/activate
-export RLL_MOTION_DATA_DIR=/home/jvwei/datasets/dr02_kit_locomotion
+export RLL_MOTION_DATA_DIR=/home/jvwei/datasets/dr02_kit_locomotion_with_toe
 export OMNI_KIT_ACCEPT_EULA=YES
 PHYSICS_BACKEND="${DR02_PHYSICS_BACKEND:-isaacsim_physx}"
 case "$PHYSICS_BACKEND" in
