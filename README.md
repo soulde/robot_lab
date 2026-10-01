@@ -114,85 +114,57 @@ To enable your extension, follow these steps:
 
 </details>
 
-## Docker setup
+## Docker training
 
-<details>
+The portable training image uses `nvcr.io/nvidia/isaac-lab:3.0.0-rc1`. It installs the robot_lab task packages and the pinned AMP-capable `soulde/rsl_rl` fork. Motion data stays outside the image and is mounted read-only; logs and checkpoints are written to a host directory.
 
-<summary>Click to expand</summary>
+### Requirements
 
-### Building Isaac Lab Base Image
+- Docker Engine with Docker Compose v2 and Buildx/BuildKit.
+- NVIDIA Container Toolkit and a host NVIDIA driver supported by the Isaac Lab image.
+- Access to NGC (`docker login nvcr.io`) and a local `soulde/rsl_rl` checkout containing the pinned AMP revision (default: `~/rsl_rl`).
+- A compatible motion directory. For DR02 AMP, it must contain `bodies.json` and the selected `.npz` motions.
+- Explicit acceptance of the NVIDIA software license before running a container.
 
-Currently, we don't have the Docker for Isaac Lab publicly available. Hence, you'd need to build the docker image
-for Isaac Lab locally by following the steps [here](https://isaac-sim.github.io/IsaacLab/main/source/deployment/index.html).
+### Build the image
 
-Once you have built the base Isaac Lab image, you can check it exists by doing:
-
-```bash
-docker images
-
-# Output should look something like:
-#
-# REPOSITORY                       TAG       IMAGE ID       CREATED          SIZE
-# isaac-lab-base                   latest    28be62af627e   32 minutes ago   18.9GB
-```
-
-### Building robot_lab Image
-
-Following above, you can build the docker container for this project. It is called `robot-lab`. However,
-you can modify this name inside the [`docker/docker-compose.yaml`](docker/docker-compose.yaml).
+Build from the local AMP-capable RSL-RL checkout:
 
 ```bash
-cd docker
-docker compose --env-file .env.base --file docker-compose.yaml build robot-lab
+./scripts/docker_train.sh build
 ```
 
-You can verify the image is built successfully using the same command as earlier:
+The build exports only the pinned Git revision into a temporary clean context, so the host virtual environment and Git credentials are not copied into the image. Override the checkout, revision, or local image tag when needed:
 
 ```bash
-docker images
-
-# Output should look something like:
-#
-# REPOSITORY                       TAG       IMAGE ID       CREATED             SIZE
-# robot-lab                        latest    00b00b647e1b   2 minutes ago       18.9GB
-# isaac-lab-base                   latest    892938acb55c   About an hour ago   18.9GB
+RSL_RL_DIR="$HOME/rsl_rl" RSL_RL_COMMIT=<40-character-commit> \
+  ROBOT_LAB_IMAGE=robot-lab:custom ./scripts/docker_train.sh build
 ```
 
-### Running the container
+### Run a smoke check or training
 
-After building, the usual next step is to start the containers associated with your services. You can do this with:
+Set the NVIDIA license acceptance explicitly. Pass the robot-level motion-data directory and a host directory for logs/checkpoints:
 
 ```bash
-docker compose --env-file .env.base --file docker-compose.yaml up
+export ACCEPT_EULA=Y
+
+./scripts/docker_train.sh smoke \
+  --motion-dir /path/to/dr02_motion_data \
+  --output-dir /path/to/robot_lab_runs
+
+./scripts/docker_train.sh train \
+  --motion-dir /path/to/dr02_motion_data \
+  --output-dir /path/to/robot_lab_runs \
+  -- --num_envs 4096 --max_iterations 30000 --seed 42
 ```
 
-This will start the services defined in your `docker-compose.yaml` file, including robot-lab.
+The default task is `RobotLab-Isaac-AMP-Rough-Deeprobotics-DR02-Pro-v0`. Override it with `--task TASK`. Training always runs headless. `smoke` runs one environment for one iteration and uses a unique run name. The output directory is mounted at `logs/`, so checkpoints and logs remain on the host.
 
-If you want to run it in detached mode (in the background), use:
+The launcher uses the calling user's UID and GID by default. To match a different host-owned output directory, pass `--uid UID --gid GID`. Motion data is mounted read-only. The launcher accepts relative paths and paths containing spaces.
 
-```bash
-docker compose --env-file .env.base --file docker-compose.yaml up -d
-```
+Use the same commands through `./docker/dr02.sh` if you prefer the Docker-specific entry point. `./scripts/docker_train.sh doctor` reports Docker, Buildx, and GPU visibility.
 
-### Interacting with a running container
-
-If you want to run commands inside the running container, you can use the `exec` command:
-
-```bash
-docker exec --interactive --tty -e DISPLAY=${DISPLAY} robot-lab /bin/bash
-```
-
-### Shutting down the container
-
-When you are done or want to stop the running containers, you can bring down the services:
-
-```bash
-docker compose --env-file .env.base --file docker-compose.yaml down
-```
-
-This stops and removes the containers, but keeps the images.
-
-</details>
+The launcher builds only when asked and never starts a full training run implicitly. After the smoke run succeeds, start the full run with the `train` command above.
 
 ## Try examples
 

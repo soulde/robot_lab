@@ -1,36 +1,30 @@
-# Copyright (c) 2024-2026 Ziqi Fan
-# SPDX-License-Identifier: Apache-2.0
-
-x-default-robot-lab-environment: &default-robot-lab-environment
-  - OMNI_KIT_ALLOW_ROOT=1
-
-x-default-robot-lab-deploy: &default-robot-lab-deploy
-  resources:
-    reservations:
-      devices:
-        - driver: nvidia
-          count: all
-          capabilities: [ gpu ]
+name: robot-lab-training
 
 services:
-  robot-lab:
-    env_file: .env.base
-    build:
-      context: ../
-      dockerfile: docker/Dockerfile
-      args:
-        - ISAACLAB_BASE_IMAGE_ARG=${ISAACLAB_BASE_IMAGE}
-        - DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG=${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
-    image: robot-lab
-    container_name: robot-lab
+  trainer:
+    image: ${ROBOT_LAB_IMAGE:-robot-lab:isaac-lab-3.0.0-rc1}
+    container_name: robot-lab-training
+    init: true
+    entrypoint: []
+    working_dir: /workspace/robot_lab
+    user: "${HOST_UID:?launcher must set HOST_UID}:${HOST_GID:?launcher must set HOST_GID}"
+    gpus: all
+    shm_size: 8gb
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:?Set ACCEPT_EULA=Y before smoke or train}
+      OMNI_KIT_ACCEPT_EULA: "YES"
+      RLL_MOTION_DATA_DIR: /workspace/motion-data
+      HOME: /tmp
+      XDG_CACHE_HOME: /tmp/.cache
+      PYTHONUNBUFFERED: "1"
+      NVIDIA_DRIVER_CAPABILITIES: all
+      USER: "${HOST_UID}"
+      LOGNAME: "${HOST_UID}"
     volumes:
       - type: bind
-        source: ../
-        target: ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
-    network_mode: host
-    environment: *default-robot-lab-environment
-    deploy: *default-robot-lab-deploy
-    # This is the entrypoint for the container
-    entrypoint: bash
-    stdin_open: true
-    tty: true
+        source: ${MOTION_DATA_HOST:?launcher must set MOTION_DATA_HOST}
+        target: /workspace/motion-data
+        read_only: true
+      - type: bind
+        source: ${OUTPUT_DIR_HOST:?launcher must set OUTPUT_DIR_HOST}
+        target: /workspace/robot_lab/logs

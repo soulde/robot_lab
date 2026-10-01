@@ -1,5 +1,7 @@
 # ignore .git related folders
 .git/
+**/.git
+**/.git/**
 .github/
 .gitignore
 # ignore docs
@@ -14,6 +16,23 @@ docs/
 # ignore docker
 docker/cluster/exports/
 docker/.container.cfg
+# ignore local configuration and developer environments
+.env
+.env.*
+**/.venv/
+**/venv/
+# Keep motion datasets, outputs, and large local artifacts on the host.
+artifacts/
+datasets/
+**/motions/
+**/*.npz
+**/*.pt
+**/*.pth
+**/checkpoints/
+# ignore tool caches
+.ruff_cache/
+.mypy_cache/
+.cache/
 # ignore recordings
 recordings/
 # ignore __pycache__
