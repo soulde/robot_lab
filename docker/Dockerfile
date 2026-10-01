@@ -1,23 +1,40 @@
-ARG ISAACLAB_BASE_IMAGE_ARG
+# syntax=docker/dockerfile:1.7
 
-# we use the basic isaaclab image as the base
-FROM ${ISAACLAB_BASE_IMAGE_ARG} AS base
-
-ARG DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG
-ENV DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH=${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH_ARG}
+FROM nvcr.io/nvidia/isaac-lab:3.0.0-rc1
 
 USER root
 
-# Copy the Isaac Lab Extension Template directory (files to exclude are defined in .dockerignore)
-COPY ../ ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}
+ARG RSL_RL_COMMIT=d5383ef07c09272ba17abe20a2f283c76b7afe38
+ARG RSL_RL_BRANCH=develop
+ARG ISAACLAB_PYTHON=/workspace/isaaclab/_isaac_sim/python.sh
 
-# # Install whatever you need as additional dependencies.
-RUN bash -i -c "source ${HOME}/.bashrc && \
-    pip install -e '${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_zoo[isaaclab]' && \
-    pip install -e ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_datasets && \
-    pip install -e '${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/robot_learning_lab_tasks[isaaclab]' && \
-    pip install -e ${DOCKER_ISAACLAB_EXTENSION_TEMPLATE_PATH}/source/rll_rl"
+ENV ROBOT_LAB_ROOT=/workspace/robot_lab \
+    ISAACLAB_PYTHON=${ISAACLAB_PYTHON} \
+    HOME=/tmp \
+    XDG_CACHE_HOME=/tmp/.cache \
+    PYTHONUNBUFFERED=1
 
-# make working directory as the Isaac Lab directory
-# this is the default directory when the container is run
-WORKDIR /workspace
+WORKDIR ${ROBOT_LAB_ROOT}
+COPY . ${ROBOT_LAB_ROOT}
+
+# The launcher exports this exact commit from the host's RSL-RL checkout as a
+# small, clean BuildKit context. This avoids embedding credentials or a host
+# virtual environment in the image build.
+COPY --from=rsl_rl / /opt/robot_lab_rsl_rl
+
+RUN test -f /opt/robot_lab_rsl_rl/setup.py && \
+    test -x "${ISAACLAB_PYTHON}" && \
+    ("${ISAACLAB_PYTHON}" -m pip uninstall -y rsl-rl-lib || true) && \
+    "${ISAACLAB_PYTHON}" -m pip install --no-deps --editable /opt/robot_lab_rsl_rl
+
+# Install the project task packages into the Isaac Lab Python environment.
+# The base image supplies Isaac Lab and simulator dependencies.
+RUN "${ISAACLAB_PYTHON}" -m pip install --no-deps \
+      --editable "${ROBOT_LAB_ROOT}/source/robot_learning_lab_datasets" \
+      --editable "${ROBOT_LAB_ROOT}/source/robot_learning_lab_zoo[isaaclab]" \
+      --editable "${ROBOT_LAB_ROOT}/source/rll_rl" \
+      --editable "${ROBOT_LAB_ROOT}/source/robot_learning_lab_tasks[isaaclab]"
+
+# Run as the host UID/GID supplied by Compose. `/tmp` is world writable and
+# keeps Kit/Python caches writable without assuming a matching passwd entry.
+ENTRYPOINT []
