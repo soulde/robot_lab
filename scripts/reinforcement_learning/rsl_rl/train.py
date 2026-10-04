@@ -34,6 +34,8 @@ parser.add_argument(
     "--distributed", action="store_true", default=False, help="Run training with multiple GPUs or nodes."
 )
 parser.add_argument("--export_io_descriptors", action="store_true", default=False, help="Export IO descriptors.")
+parser.add_argument("--reward_diagnostics", action="store_true", help="Record reward outliers before resets.")
+parser.add_argument("--viser_start_paused", action="store_true", help="Start Viser with rendering paused; training continues.")
 parser.add_argument(
     "--ray-proc-id", "-rid", type=int, default=None, help="Automatically configured by Ray integration, otherwise None."
 )
@@ -174,6 +176,18 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     # set the log directory for the environment (works for all environment types)
     env_cfg.log_dir = log_dir
 
+    if args_cli.viser_start_paused:
+        from isaaclab_visualizers.viser import ViserVisualizerCfg
+        from viser_controls import StartPausedViserVisualizer
+
+        configs = list(env_cfg.sim.visualizer_cfgs or [])
+        viser_cfg = next((cfg for cfg in configs if cfg.visualizer_type == "viser"), None)
+        if viser_cfg is None:
+            viser_cfg = ViserVisualizerCfg()
+            configs.append(viser_cfg)
+        viser_cfg.class_type = StartPausedViserVisualizer
+        env_cfg.sim.visualizer_cfgs = configs
+
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
 
@@ -199,6 +213,11 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     start_time = time.time()
 
+    diagnostics = None
+    if args_cli.reward_diagnostics:
+        from reward_diagnostics import RewardDiagnostics
+        diagnostics = RewardDiagnostics(env.unwrapped, log_dir)
+
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
 
@@ -211,6 +230,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         raise ValueError(f"Unsupported runner class: {agent_cfg.class_name}")
     # write git state to logs
     runner.add_git_repo_to_log(__file__)
+    if diagnostics is not None:
+        diagnostics.attach_algorithm(runner.alg)
     # load the checkpoint
     if agent_cfg.resume or agent_cfg.algorithm.class_name == "Distillation":
         print(f"[INFO]: Loading model checkpoint from: {resume_path}")
