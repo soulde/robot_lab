@@ -4,7 +4,7 @@ FROM nvcr.io/nvidia/isaac-lab:3.0.0-rc1
 
 USER root
 
-ARG RSL_RL_COMMIT=d5383ef07c09272ba17abe20a2f283c76b7afe38
+ARG RSL_RL_COMMIT=8eef047f1d9b5e07d54d743387da2f0fb42791fa
 ARG RSL_RL_BRANCH=develop
 ARG ISAACLAB_PYTHON=/workspace/isaaclab/_isaac_sim/python.sh
 

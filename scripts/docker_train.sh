@@ -6,7 +6,7 @@ COMPOSE_FILE="$ROOT/docker/docker-compose.yaml"
 DOCKERFILE="$ROOT/docker/Dockerfile"
 IMAGE="${ROBOT_LAB_IMAGE:-robot-lab:isaac-lab-3.0.0-rc1}"
 DEFAULT_TASK="RobotLab-Isaac-AMP-Rough-Deeprobotics-DR02-Pro-v0"
-DEFAULT_RSL_RL_COMMIT="d5383ef07c09272ba17abe20a2f283c76b7afe38"
+DEFAULT_RSL_RL_COMMIT="8eef047f1d9b5e07d54d743387da2f0fb42791fa"
 
 usage() {
   cat <<'EOF'
