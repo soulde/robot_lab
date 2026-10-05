@@ -3,7 +3,7 @@
 #
 # Standard stack for robot_lab:
 #   IsaacLab checkout at tag v3.0.0-EA + Isaac Sim 6.1 (pip) + rsl-rl custom 5.x fork
-#   (~/humanoid_amp/third_party/rsl_rl, pip name rsl-rl-lib==5.0.1).
+#   (~/rsl_rl, pip name rsl-rl-lib==5.0.1).
 #
 # Notes:
 # - All proxy env vars are stripped: the LAN proxy (100.85.223.50:7890) breaks
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 ENV_DIR="${1:-$HOME/env_isaaclab_ea}"
-ISAACLAB_DIR="${2:-$HOME/IsaacLab}"
+ISAACLAB_DIR="${2:-$HOME/IsaacLab-EA}"
 ROBOT_LAB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 UV="${UV:-$HOME/.local/bin/uv}"
 
@@ -44,7 +44,7 @@ python -c "from importlib.metadata import version; print('[OK] isaacsim', versio
 cd "$ISAACLAB_DIR"
 echo "[INFO] IsaacLab at: $(git describe --tags 2>/dev/null || git rev-parse --short HEAD)"
 "$UV" pip install --no-deps \
-    -e source/isaaclab -e source/isaaclab_physx -e source/isaaclab_rl \
+    -e source/isaaclab -e source/isaaclab_physx -e source/isaaclab_newton -e source/isaaclab_rl \
     -e source/isaaclab_tasks -e source/isaaclab_assets
 # isaaclab runtime deps (torch etc. pinned by EA pyproject)
 $NOPROXY UV_HTTP_TIMEOUT=1200 "$UV" pip install \
@@ -58,11 +58,11 @@ cd "$ROBOT_LAB_DIR"
     -e source/robot_learning_lab_tasks \
     -e source/robot_learning_lab_zoo \
     -e source/rll_rl \
-    -e "$HOME/humanoid_amp/third_party/rsl_rl"
+    -e "$HOME/rsl_rl"
 
 # --- 5. smoke test -------------------------------------------------------------
 echo "[DONE] Env ready: $ENV_DIR"
 echo "Verify with:"
 echo "  source $ENV_DIR/bin/activate"
-echo "  cd $ROBOT_LAB_DIR && python scripts/reinforcement_learning/rsl_rl/play.py \\"
-echo "    --task RobotLab-Isaac-Velocity-Rough-Unitree-Go2-v0 --num_envs 4 --headless"
+echo "  cd $ROBOT_LAB_DIR && uv run --active --no-project --offline python scripts/reinforcement_learning/rsl_rl/play.py \\"
+echo "    --task RobotLab-Isaac-Velocity-Rough-Unitree-Go2-v0 --num_envs 4 --viz none"
